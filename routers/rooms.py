@@ -41,6 +41,13 @@ async def create_room(room: RoomCreate, session: Session = Depends(get_session))
     session.refresh(db_room)
     return db_room
 
+@router.get("/rooms/{room_code}", response_model=Room)
+async def get_room(room_code: str, session: Session = Depends(get_session)):
+    room = session.get(Room, room_code)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return room
+
 @router.delete("/rooms/{room_code}")
 async def delete_room(room_code: str, session: Session = Depends(get_session)):
     room = session.get(Room, room_code)
