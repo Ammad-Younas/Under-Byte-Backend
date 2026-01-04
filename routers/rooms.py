@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File
 from sqlmodel import Session, select
-from database.connection import get_session
+from database.connection import get_session, engine
 from models.schemas import Room, RoomCreate, Message, MessageCreate, RoomUpdate
 from services.websocket_manager import ConnectionManager
 from typing import List
@@ -99,6 +99,16 @@ async def get_messages(room_code: str, session: Session = Depends(get_session)):
 @router.websocket("/ws/{room_code}/{username}")
 async def websocket_endpoint(websocket: WebSocket, room_code: str, username: str):
     await manager.connect(websocket, room_code)
+    
+    # Send initial room state so client knows host name etc.
+    with Session(engine) as session:
+        room = session.get(Room, room_code)
+        if room:
+            await websocket.send_json({
+                "type": "room_update", 
+                "data": room.dict()
+            })
+
     try:
         while True:
             await websocket.receive_text()
