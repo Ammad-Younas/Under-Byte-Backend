@@ -1,6 +1,14 @@
 from sqlmodel import SQLModel, create_engine, Session
 
-sqlite_file_name = "database.db"
+import os
+
+# Use /tmp for Vercel/Serverless environment as root is read-only
+# Note: Data in /tmp is ephemeral and will be lost on restart.
+if os.environ.get("VERCEL"):
+    sqlite_file_name = "/tmp/database.db"
+else:
+    sqlite_file_name = "database.db"
+
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
 connect_args = {"check_same_thread": False}

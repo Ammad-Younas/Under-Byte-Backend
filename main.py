@@ -9,10 +9,15 @@ import os
 app = FastAPI(title="Under Byte Backend")
 
 # Ensure uploads directory exists
-os.makedirs("uploads", exist_ok=True)
+if os.environ.get("VERCEL"):
+    UPLOAD_DIR = "/tmp/uploads"
+else:
+    UPLOAD_DIR = "uploads"
+
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Mount static files
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # Allow all origins for simplicity in development
 app.add_middleware(

@@ -15,7 +15,13 @@ manager = ConnectionManager()
 async def upload_file(file: UploadFile = File(...)):
     file_extension = os.path.splitext(file.filename)[1]
     file_name = f"{uuid.uuid4()}{file_extension}"
-    file_path = f"uploads/{file_name}"
+    
+    if os.environ.get("VERCEL"):
+        upload_dir = "/tmp/uploads"
+    else:
+        upload_dir = "uploads"
+        
+    file_path = f"{upload_dir}/{file_name}"
     
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
